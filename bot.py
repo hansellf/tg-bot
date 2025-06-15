@@ -1,7 +1,7 @@
 import os
 import asyncio
 import requests
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -23,7 +23,6 @@ async def handle_start(message: types.Message):
 async def handle_any_message(message: types.Message):
     text = message.text.strip()
     
-    # Step 1: Parse URL
     try:
         url = urlparse(text)
         if "stickerdom.store" not in url.netloc:
@@ -36,21 +35,24 @@ async def handle_any_message(message: types.Message):
             await message.answer("❌ No initData found in URL.")
             return
 
-        # Optional: validate initData with backend
         resp = requests.post(f"{BACKEND_URL}/validate-initdata", json={"initData": init_data})
         if resp.status_code != 200:
             await message.answer("❌ initData is invalid or expired.")
             return
 
-        # Step 2: Extract bundle/pack from path
         parts = url.path.strip("/").split("/")
-        bundle_id = parts[1] if len(parts) > 2 else "unknown"
-        pack_id = parts[2] if len(parts) > 2 else "0"
+        if len(parts) >= 3:
+            bundle_id = parts[1]
+            pack_id = parts[2]
+        else:
+            bundle_id = "unknown"
+            pack_id = "0"
 
-        # Step 3: Build TON payment link
         amount_ton = 1.5
         comment = f"bundle:{bundle_id}-pack:{pack_id}"
-        payment_url = f"https://tonkeeper.com/transfer/{TON_RECEIVER}?amount={amount_ton}&text={comment}"
+        comment_encoded = quote(comment)
+
+        payment_url = f"https://tonkeeper.com/transfer/{TON_RECEIVER}?amount={amount_ton}&text={comment_encoded}"
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
