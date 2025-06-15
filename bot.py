@@ -52,7 +52,7 @@ async def handle_any_message(message: types.Message):
         comment = f"bundle:{bundle_id}-pack:{pack_id}"
         comment_encoded = quote(comment)
 
-        payment_url = f"https://tonkeeper.com/transfer/{TON_RECEIVER}?amount={amount_ton}&text={comment_encoded}"
+        payment_url = f"https://app.tonkeeper.com/transfer/{TON_RECEIVER}?amount={amount_ton}&text={comment_encoded}"
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
