@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pyjwt
+aiogram
+requests
+python-multipart
